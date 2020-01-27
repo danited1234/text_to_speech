@@ -73,15 +73,15 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
 
     ap.add_argument(
-        "-d", "--docx", required=False, help="Path to docx file",
+        "-d", "--docx", required=False, help="Path to a docx file.",
     )
 
     ap.add_argument(
-        "-t", "--txt", required=False, help="Path to txt file",
+        "-t", "--txt", required=False, help="Path to a txt file.",
     )
 
     ap.add_argument(
-        "-p", "--pdf", required=False, help="Path to pdf file",
+        "-p", "--pdf", required=False, help="Path to a pdf file.",
     )
 
     args = vars(ap.parse_args())
