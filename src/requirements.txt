@@ -4,3 +4,4 @@ docx
 python-docx
 PyPDF2
 textract
+pre-commit
