@@ -1,106 +1,100 @@
 # -*- coding: utf-8 -*-
+import argparse
 import os
 import sys
 import time
 
-import playsound
-import PyPDF2
 import textract
 from docx import Document
 from gtts import gTTS
+from playsound import playsound
+from PyPDF2 import PdfFileReader
 
 
-def reading_docx():
-    filename1 = input("Please enter name of the docx file with the .docx extension\n")
-    doc = Document(filename1)
+def clear_terminal():
+    """Cross platform method of clearing the terminal."""
+    os.system("cls" if os.name == "nt" else "clear")
+
+
+def play_text(text: str):
+    save_name = "sentence.mp3"
+    # Extract speech from text
+    text_to_speech = gTTS(text=text, lang="en")
+    # Save speech as MP3
+    text_to_speech.save(save_name)
+    # Play it
+    playsound(save_name)
+    # Cleanup, remove the MP3
+    os.unlink(save_name)
+
+
+def read_docx(filename):
+    doc = Document(filename)
     for p in doc.paragraphs:
-        print("Your document has " + str(len(p.text)) + " letters")
+        print(f"You word document, {filename}, has {len(p.text)} letters.")
+
     time.sleep(2)
-    os.system("clear")
-    print("Reading Contents From Your File.....")
-    text_to_spoken = ""
-    text_to_spoken = p.text
-    text_to_speech = gTTS(text=str(text_to_spoken), lang="en")
-    text_to_speech.save("sentence.mp3")
-    playsound.playsound("sentence.mp3")
-    os.system("rm sentence.mp3")
-    print("Thank You For Using The Program")
-    sys.exit()
-    return
+    print("Reading file contents...")
+    play_text(p.text)
+    clear_terminal()
 
 
-def reading_text():
-    filename = input("Please enter the name of the file with the .txt extension\n")
-    with open(filename, "r+") as fileopening:
-        # reading the file the user entered
-        reading = fileopening.read()
+def read_text(filename):
+    # filename = input("Please enter the name of the file with the .txt extension\n")
+    with open(filename, "r+") as f:
+        reading = f.read()
         contents = reading.rstrip()
-        counting_words = contents.split()
-        # counting the words in the document
-        still_counting = len(counting_words)
-        print("Your file " + filename + " has " + str(still_counting) + " words")
-        time.sleep(2)
-        os.system("clear")
-        print("Now reading your file contents......")
-    to_be_saved = ""
-    to_be_saved = counting_words
-    text_to_speech = gTTS(text=str(to_be_saved), lang="en")
-    text_to_speech.save("sentence.mp3")
-    playsound.playsound("sentence.mp3")
-    os.system("rm sentence.mp3")
-    print("Thank You For Using the Program")
-    sys.exit()
-    return
+        words = contents.split()
+        print(f"Your text file, {filename}, has {len(words)} words.")
+    print("Reading file contents...")
+
+    play_text(" ".join(words))
+    clear_terminal()
 
 
-# making a function to read a pdf file
+def read_pdf(filename):
+    with open(filename, "rb") as f:
+        reader = PdfFileReader(f)
+        num_pages = reader.numPages
+        if num_pages >= 20:
+            print("Sorry, but your document is too large.\nThanks for your patience.")
+            return
+
+    print(f"Your PDF document, {filename}, has {num_pages} pages")
+    print("Reading file contents...")
+
+    text = textract.process(filename)
+    # Rencode string to utf-8 to remove extra chars.
+    play_text(str(text, "utf-8"))
+    clear_terminal()
 
 
-def reading_pdf():
-    filename2 = input("Please enter the file name with the .pdf extension\n")
-    file = open(filename2, "rb")
-    # reading the pdf file
-    pdfReader = PyPDF2.PdfFileReader(file)
-    # counting the page numbers of the document
-    pages = pdfReader.numPages
-    print("Your Document has " + str(pages) + " pages")
-    time.sleep(2)
-    if pages >= 20:
-        print("Sorry But your Document is very large Thank For Your Patience")
-        sys.exit()
-    else:
-        # if the document is not large enough then the text from the will be extracted
-        text = textract.process(filename2)
-        os.system("clear")
-        print("Now reading your file contents......")
-        to_be_saved = ""
-        to_be_saved = text
-        text_to_speech = gTTS(text=str(to_be_saved), lang="en")
-        text_to_speech.save("sentence.mp3")
-        playsound.playsound("sentence.mp3")
-        os.system("rm .mp3")
-        print("Thank You For Using the Program")
-        sys.exit()
-    return
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
 
+    ap.add_argument(
+        "-d", "--docx", required=False, help="Path to docx file",
+    )
 
-cmd = sys.argv[1:]
-# for letting the user what the program is about
-if "--help" in cmd:
-    print("This program, narrates .docx,.pdf and .txt files.")
-    sys.exit()
-    # making a variable to call the function according to input
-Choose = input(
-    "For reading \n1.docx File Press 1\n2.txt File Press 2\n3.pdf File Press 3\n"
-)
-if int(Choose) == 1:
-    reading_docx()
-elif int(Choose) == 2:
-    reading_text()
-elif int(Choose) == 3:
-    reading_pdf()
-elif str(Choose) != ".txt" or str(Choose) != ".pdf" or str(Choose) != ".docx":
-    print("We do not have the file extension that you entered")
-    print("Something went please try again")
-else:
-    print("Thank You For Using The Program")
+    ap.add_argument(
+        "-t", "--txt", required=False, help="Path to txt file",
+    )
+
+    ap.add_argument(
+        "-p", "--pdf", required=False, help="Path to pdf file",
+    )
+
+    args = vars(ap.parse_args())
+    if args["docx"] is not None:
+        read_docx(args["docx"])
+
+    if args["txt"] is not None:
+        read_text(args["txt"])
+
+    if args["pdf"] is not None:
+        read_pdf(args["pdf"])
+    elif not any(args.values()):
+        ap.error("No filenames provided.")
+
+    clear_terminal()
+    print("Done!")
