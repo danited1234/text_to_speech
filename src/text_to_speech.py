@@ -17,6 +17,7 @@ def clear_terminal():
 
 
 def play_text(text: str):
+    """Creates speech from text and plays it"""
     save_name = "sentence.mp3"
     # Extract speech from text
     text_to_speech = gTTS(text=text, lang="en")
@@ -28,7 +29,8 @@ def play_text(text: str):
     os.unlink(save_name)
 
 
-def read_docx(filename):
+def read_docx(filename: str):
+    """Read a docx file aloud."""
     doc = Document(filename)
     for p in doc.paragraphs:
         print(f"You word document, {filename}, has {len(p.text)} letters.")
@@ -39,8 +41,8 @@ def read_docx(filename):
     clear_terminal()
 
 
-def read_text(filename):
-    # filename = input("Please enter the name of the file with the .txt extension\n")
+def read_text(filename: str):
+    """Read a text file aloud."""
     with open(filename, "r+") as f:
         reading = f.read()
         contents = reading.rstrip()
@@ -52,7 +54,8 @@ def read_text(filename):
     clear_terminal()
 
 
-def read_pdf(filename):
+def read_pdf(filename: str):
+    """Read a PDF file aloud."""
     with open(filename, "rb") as f:
         reader = PdfFileReader(f)
         num_pages = reader.numPages
